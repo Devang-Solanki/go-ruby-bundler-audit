@@ -1,5 +1,5 @@
-// bundleraudit/advisories.go
-package rubybundleraudit
+// rubyaudit/advisories.go
+package rubyaudit
 
 import (
 	"encoding/json"
@@ -13,7 +13,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const AdvisoryPath = "~/.cache/vulndb"
+const AdvisoryPath = ".config/vulndb"
 
 // Advisory represents the structure of an advisory in the YAML files
 type Advisory struct {
@@ -30,8 +30,15 @@ type Advisory struct {
 
 // LoadAdvisories loads all YAML files in the advisory directory
 func LoadAdvisories() ([]Advisory, error) {
-	var advisories []Advisory
 	advisoryDir := filepath.Join(os.Getenv("HOME"), AdvisoryPath)
+
+	// Check if the advisory database is present
+	if _, err := os.Stat(advisoryDir); os.IsNotExist(err) {
+		log.Print("Advisory database not found. Downloading...")
+		UpdateDB()
+	}
+
+	var advisories []Advisory
 
 	// Walk through the directory and parse each YAML file
 	err := filepath.Walk(advisoryDir, func(path string, info os.FileInfo, err error) error {
