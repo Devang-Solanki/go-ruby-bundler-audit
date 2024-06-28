@@ -1,5 +1,5 @@
 // bundleraudit/advisories.go
-package bundleraudit
+package rubybundleraudit
 
 import (
 	"encoding/json"

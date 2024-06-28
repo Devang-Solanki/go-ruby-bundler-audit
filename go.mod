@@ -1,4 +1,4 @@
-module go-ruby-bundler-audit
+module github.com/Devang-Solanki/go-ruby-bundler-audit
 
 go 1.21.1
 

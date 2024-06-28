@@ -1,5 +1,5 @@
 // bundleraudit/updater.go
-package bundleraudit
+package rubybundleraudit
 
 import (
 	"log"
