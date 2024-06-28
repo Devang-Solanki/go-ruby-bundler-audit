@@ -29,7 +29,7 @@ func printResult(results []rubyaudit.Advisory, gemName *string, version *string)
 
 func main() {
 	// Command-line flags
-	file := flag.String("file", "", "Path to the Gemfile.lock or yarn.lock file")
+	file := flag.String("file", "", "Path to the Gemfile.lock file")
 	gemName := flag.String("name", "", "Gem name to search for advisories")
 	version := flag.String("version", "", "Version of the gem to search for advisories")
 
@@ -40,7 +40,7 @@ func main() {
 
 	if *file != "" {
 		// If a file is provided, handle the extraction based on the file type
-		if filepath.Base(*file) == "yarn.lock" {
+		if filepath.Base(*file) == "Gemfile.lock" {
 			deps, err := rubyaudit.ExtractGemfileLockDependencies(*file)
 			if err != nil {
 				log.Fatalf("Error extracting dependencies from yarn.lock: %v", err)
@@ -50,13 +50,10 @@ func main() {
 				fmt.Printf("- %s: %s\n", dep.Name, dep.Version)
 				result, err := rubyaudit.SearchAdvisories(dep.Name, dep.Version)
 				if err != nil {
-					log.Fatalf("Error searching advisories: %v", err)
+					log.Printf("Error searching advisories: %v", err)
 				}
 				printResult(result, gemName, version)
 			}
-		} else if filepath.Base(*file) == "Gemfile.lock" {
-			// You could add parsing for Gemfile.lock similarly here
-			fmt.Println("Gemfile.lock parsing not implemented yet.")
 		} else {
 			log.Fatalf("Unsupported lock file type: %s", *file)
 		}
