@@ -11,6 +11,22 @@ import (
 	rubyaudit "github.com/Devang-Solanki/go-ruby-bundler-audit/rubyaudit"
 )
 
+func printResult(results []rubyaudit.Advisory, gemName *string, version *string) {
+	fmt.Printf("Advisories for %s %s:\n", *gemName, *version)
+	for _, res := range results {
+		fmt.Println("	Gem:", res.Gem)
+		fmt.Println("	Title:", res.Title)
+		fmt.Println("	URL:", res.URL)
+		fmt.Println("	Date:", res.Date)
+		fmt.Println("	Description:", res.Description)
+		fmt.Println("	CVE:", res.CVE)
+		fmt.Println("	GHSA:", res.GHSA)
+		fmt.Println("	Patched Versions:", res.PatchedVersions)
+		fmt.Println("	Unaffected Versions:", res.UnaffectedVersions)
+		fmt.Println() // Adding an empty line for better readability between entries
+	}
+}
+
 func main() {
 	// Command-line flags
 	file := flag.String("file", "", "Path to the Gemfile.lock or yarn.lock file")
@@ -32,6 +48,11 @@ func main() {
 			fmt.Printf("Dependencies in %s:\n", *file)
 			for _, dep := range deps {
 				fmt.Printf("- %s: %s\n", dep.Name, dep.Version)
+				result, err := rubyaudit.SearchAdvisories(dep.Name, dep.Version)
+				if err != nil {
+					log.Fatalf("Error searching advisories: %v", err)
+				}
+				printResult(result, gemName, version)
 			}
 		} else if filepath.Base(*file) == "Gemfile.lock" {
 			// You could add parsing for Gemfile.lock similarly here
@@ -45,7 +66,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error searching advisories: %v", err)
 		}
-		fmt.Printf("Advisories for %s %s:\n%s\n", *gemName, *version, result)
+		printResult(result, gemName, version)
 	} else {
 		log.Println("Usage:")
 		log.Println("  --file <file> : Specify the Gemfile.lock or yarn.lock file to process.")
