@@ -23,6 +23,7 @@ func printResult(results []rubyaudit.Advisory, gemName *string, version *string)
 		fmt.Println("	GHSA:", res.GHSA)
 		fmt.Println("	Patched Versions:", res.PatchedVersions)
 		fmt.Println("	Unaffected Versions:", res.UnaffectedVersions)
+		fmt.Println("	CVSS3:", res.CVSS3)
 		fmt.Println() // Adding an empty line for better readability between entries
 	}
 }
@@ -47,12 +48,13 @@ func main() {
 			}
 			fmt.Printf("Dependencies in %s:\n", *file)
 			for _, dep := range deps {
-				fmt.Printf("- %s: %s\n", dep.Name, dep.Version)
 				result, err := rubyaudit.SearchAdvisories(dep.Name, dep.Version)
 				if err != nil {
 					log.Printf("Error searching advisories: %v", err)
 				}
-				printResult(result, gemName, version)
+				if len(result) != 0 {
+					printResult(result, gemName, version)
+				}
 			}
 		} else {
 			log.Fatalf("Unsupported lock file type: %s", *file)
@@ -63,7 +65,9 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error searching advisories: %v", err)
 		}
-		printResult(result, gemName, version)
+		if len(result) == 0 {
+			printResult(result, gemName, version)
+		}
 	} else {
 		log.Println("Usage:")
 		log.Println("  --file <file> : Specify the Gemfile.lock or yarn.lock file to process.")

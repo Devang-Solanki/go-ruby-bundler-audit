@@ -25,6 +25,8 @@ type Advisory struct {
 	GHSA               string   `yaml:"ghsa"`
 	PatchedVersions    []string `yaml:"patched_versions"`
 	UnaffectedVersions []string `yaml:"unaffected_versions"`
+	CVSS3              float64  `yaml:"cvss_v3"`
+	CVSS2              float64  `yaml:"cvss_v2"`
 }
 
 // LoadAdvisories loads all YAML files in the advisory directory
@@ -65,7 +67,7 @@ func LoadAdvisories() ([]Advisory, error) {
 	return advisories, nil
 }
 
-// SearchAdvisories searches for advisories affecting the given gem and version
+// SearchAdvisories searches for advisories affecting the given gem and version.
 func SearchAdvisories(gemName, version string) ([]Advisory, error) {
 	advisories, err := LoadAdvisories()
 	if err != nil {
@@ -80,6 +82,7 @@ func SearchAdvisories(gemName, version string) ([]Advisory, error) {
 	var results []Advisory
 	for _, advisory := range advisories {
 		if advisory.Gem == gemName {
+			isRelevant := false
 			for _, patched := range advisory.PatchedVersions {
 				constraint, err := semver.NewConstraint(patched)
 				if err != nil {
@@ -87,9 +90,12 @@ func SearchAdvisories(gemName, version string) ([]Advisory, error) {
 					continue
 				}
 				if constraint.Check(gemVersion) {
-					results = append(results, advisory)
+					isRelevant = true
 					break
 				}
+			}
+			if isRelevant {
+				results = append(results, advisory)
 			}
 		}
 	}
