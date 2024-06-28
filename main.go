@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
-	rubyaudit "github.com/Devang-Solanki/go-bundler-audit/"
+	rubyaudit "github.com/Devang-Solanki/go-bundler-audit"
 )
 
 func main() {
