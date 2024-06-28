@@ -2,7 +2,6 @@
 package rubyaudit
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -67,15 +66,15 @@ func LoadAdvisories() ([]Advisory, error) {
 }
 
 // SearchAdvisories searches for advisories affecting the given gem and version
-func SearchAdvisories(gemName, version string) (string, error) {
+func SearchAdvisories(gemName, version string) ([]Advisory, error) {
 	advisories, err := LoadAdvisories()
 	if err != nil {
-		return "", fmt.Errorf("failed to load advisories: %v", err)
+		return nil, fmt.Errorf("failed to load advisories: %v", err)
 	}
 
 	gemVersion, err := semver.NewVersion(version)
 	if err != nil {
-		return "", fmt.Errorf("invalid version: %v", err)
+		return nil, fmt.Errorf("invalid version: %v", err)
 	}
 
 	var results []Advisory
@@ -95,10 +94,5 @@ func SearchAdvisories(gemName, version string) (string, error) {
 		}
 	}
 
-	resultJSON, err := json.MarshalIndent(results, "", "  ")
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal results: %v", err)
-	}
-
-	return string(resultJSON), nil
+	return results, nil
 }
