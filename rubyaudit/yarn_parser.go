@@ -16,7 +16,7 @@ type Dependency struct {
 }
 
 // extractYarnLockDependenciesRaw extracts dependencies from the raw content of a yarn.lock file.
-func extractYarnLockDependenciesRaw(content *[]byte) []Dependency {
+func ExtractYarnLockDependenciesRaw(content *[]byte) []Dependency {
 	var deps []Dependency
 
 	// Define regex patterns for package names and versions.
@@ -63,12 +63,12 @@ func extractYarnLockDependenciesRaw(content *[]byte) []Dependency {
 }
 
 // extractYarnLockDependencies extracts dependencies from a yarn.lock file given its file path.
-func extractYarnLockDependencies(filePath string) ([]Dependency, error) {
+func ExtractYarnLockDependencies(filePath string) ([]Dependency, error) {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
-	return extractYarnLockDependenciesRaw(&content), nil
+	return ExtractYarnLockDependenciesRaw(&content), nil
 }
 
 // extractPackageName handles extracting the package name from a list of names

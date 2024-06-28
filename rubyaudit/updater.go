@@ -14,7 +14,7 @@ const (
 )
 
 // UpdateDB updates the advisory database from the remote Git repository
-func UpdateDB() {
+func updateDB() {
 	log.Print("Updating the advisory database...")
 
 	// Create the directory if it doesn't exist

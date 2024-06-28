@@ -35,7 +35,7 @@ func LoadAdvisories() ([]Advisory, error) {
 	// Check if the advisory database is present
 	if _, err := os.Stat(advisoryDir); os.IsNotExist(err) {
 		log.Print("Advisory database not found. Downloading...")
-		UpdateDB()
+		updateDB()
 	}
 
 	var advisories []Advisory

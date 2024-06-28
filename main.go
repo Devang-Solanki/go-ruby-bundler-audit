@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
-	rubyaudit "github.com/Devang-Solanki/go-ruby-bundler-audit/rubyaduit"
+	rubyaudit "github.com/Devang-Solanki/go-ruby-bundler-audit/rubyaudit"
 )
 
 func main() {
@@ -18,9 +18,6 @@ func main() {
 	version := flag.String("version", "", "Version of the gem to search for advisories")
 
 	flag.Parse()
-
-	// Update the advisory database in the background
-	rubyaudit.UpdateDB()
 
 	// Wait for a short duration to let the update process start
 	time.Sleep(2 * time.Second)
