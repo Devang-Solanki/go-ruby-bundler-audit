@@ -41,7 +41,7 @@ func main() {
 	if *file != "" {
 		// If a file is provided, handle the extraction based on the file type
 		if filepath.Base(*file) == "yarn.lock" {
-			deps, err := rubyaudit.ExtractYarnLockDependencies(*file)
+			deps, err := rubyaudit.ExtractGemfileLockDependencies(*file)
 			if err != nil {
 				log.Fatalf("Error extracting dependencies from yarn.lock: %v", err)
 			}

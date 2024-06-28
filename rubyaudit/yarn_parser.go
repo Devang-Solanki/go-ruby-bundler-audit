@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"log"
 	"os"
-	"regexp"
 	"strings"
 )
 
@@ -15,68 +14,60 @@ type Dependency struct {
 	Version string
 }
 
-// extractYarnLockDependenciesRaw extracts dependencies from the raw content of a yarn.lock file.
-func ExtractYarnLockDependenciesRaw(content *[]byte) []Dependency {
+// extractGemfileLockMainDependencies parses the Gemfile.lock content to extract main dependencies.
+func ExtractGemfileLockDependenciesRaw(content *[]byte) []Dependency {
 	var deps []Dependency
 
-	// Define regex patterns for package names and versions.
-	packageNameRegex := regexp.MustCompile(`^"([^"]+)"|^([^"\s][^"]*$)`)
-	packageVersionRegex := regexp.MustCompile(`^\s{2}version "([^"]+)"`)
-
 	scanner := bufio.NewScanner(bytes.NewReader(*content))
-	var packageName string
 
+	// Indicate when we are inside the GEM specs section.
+	inGemSpecsSection := false
+
+	// Read through each line in the Gemfile.lock file.
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if strings.HasPrefix(line, "#") {
+		// Detect the start of the GEM specs section.
+		if strings.HasPrefix(line, "GEM") {
+			inGemSpecsSection = true
 			continue
 		}
 
-		// Match package name lines.
-		if match := packageNameRegex.FindStringSubmatch(line); match != nil {
-			packageName = ""              // Reset current package name
-			for _, m := range match[1:] { // Check both capturing groups.
-				if m != "" {
-					// Handle multiple package names separated by commas.
-					names := strings.Split(m, ", ")[0]
-					packageName = extractPackageName(names)
-				}
-			}
+		// Detect the start of the specs subsection.
+		if inGemSpecsSection && strings.TrimSpace(line) == "specs:" {
+			inGemSpecsSection = true
+			continue
 		}
 
-		// Match version lines.
-		if match := packageVersionRegex.FindStringSubmatch(line); match != nil {
-			version := match[1]
-			if packageName != "" {
-				deps = append(deps, Dependency{Name: packageName, Version: version})
+		// End of the GEM specs section.
+		if inGemSpecsSection && strings.TrimSpace(line) == "" {
+			break
+		}
+
+		// Process lines within the specs subsection for main dependencies.
+		if inGemSpecsSection && strings.HasPrefix(line, "    ") && !strings.HasPrefix(line, "      ") {
+			// Extract the gem name and version.
+			parts := strings.Fields(line)
+			if len(parts) >= 2 {
+				name := strings.TrimSuffix(parts[0], " ")
+				version := strings.Trim(parts[1], "()")
+				deps = append(deps, Dependency{Name: name, Version: version})
 			}
-			packageName = "" // Reset for the next set of packages.
 		}
 	}
 
 	if err := scanner.Err(); err != nil {
-		log.Printf("Error scanning yarn.lock content: %v", err)
+		log.Printf("Error scanning Gemfile.lock file: %v", err)
 	}
 
 	return deps
 }
 
 // extractYarnLockDependencies extracts dependencies from a yarn.lock file given its file path.
-func ExtractYarnLockDependencies(filePath string) ([]Dependency, error) {
+func ExtractGemfileLockDependencies(filePath string) ([]Dependency, error) {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
-	return ExtractYarnLockDependenciesRaw(&content), nil
-}
-
-// extractPackageName handles extracting the package name from a list of names
-func extractPackageName(name string) string {
-	// Split by '@' and remove the version range if present.
-	parts := strings.Split(name, "@")
-	if len(parts) > 1 && strings.HasPrefix(parts[len(parts)-1], "npm") {
-		return strings.Join(parts[:len(parts)-1], "@")
-	}
-	return parts[0]
+	return ExtractGemfileLockDependenciesRaw(&content), nil
 }
